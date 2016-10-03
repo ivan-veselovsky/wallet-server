@@ -1,11 +1,11 @@
 package edu.wallet.server.net;
 
+import edu.wallet.config.*;
+import edu.wallet.log.*;
 import edu.wallet.server.*;
-import java.io.*;
 import java.net.*;
 import java.nio.channels.*;
 import java.nio.channels.spi.*;
-import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
@@ -16,7 +16,7 @@ public class NetServer {
 
     private final IProcessor processor;
 
-    private final Configuration config;
+    private final IConfiguration config;
 
     private final ILogger logger;
 
@@ -27,7 +27,7 @@ public class NetServer {
     private ChannelRunnable[] channelRunnables;
 
 
-    public NetServer(IProcessor proc, ILogger logger, Configuration cfg) {
+    public NetServer(IProcessor proc, ILogger logger, IConfiguration cfg) {
         assert proc != null;
         assert logger != null;
         assert cfg != null;

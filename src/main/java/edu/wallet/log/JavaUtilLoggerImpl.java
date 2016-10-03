@@ -1,15 +1,16 @@
-package edu.wallet.server;
+package edu.wallet.log;
 
+import edu.wallet.log.*;
 import java.util.logging.*;
 
 /**
- * Created by ivan on 03.10.16.
+ * Java util logger implementation.
  */
-public class LoggerImpl implements ILogger {
+public class JavaUtilLoggerImpl implements ILogger {
 
     private final java.util.logging.Logger lg;
 
-    LoggerImpl() {
+    public JavaUtilLoggerImpl() {
         lg = java.util.logging.Logger.getGlobal();
 
         assert lg != null;

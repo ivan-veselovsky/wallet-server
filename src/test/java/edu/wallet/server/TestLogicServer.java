@@ -1,5 +1,7 @@
 package edu.wallet.server;
 
+import edu.wallet.config.*;
+import edu.wallet.log.*;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -11,7 +13,7 @@ public class TestLogicServer {
 
     @Test
     public void basicProcessing() throws Exception {
-        Configuration c = new Configuration();
+        IConfiguration c = Cfg.getEntryBean().getConfiguration();
 
         ILogger logger = SystemOutLogger.instance();
 

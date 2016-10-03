@@ -1,7 +1,9 @@
-package edu.wallet.server;
+package edu.wallet.log;
 
 /**
- * Simple logger, without any levels for now.
+ * Logger interface.
+ * Used for more flexibility.
+ * Exact implementation injected upon application start up.
  */
 public interface ILogger {
     void debug(String message, Throwable t);

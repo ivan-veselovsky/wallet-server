@@ -1,6 +1,8 @@
 package edu.wallet.server;
 
 import edu.wallet.client.*;
+import edu.wallet.config.*;
+import edu.wallet.log.*;
 import edu.wallet.server.net.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -16,7 +18,7 @@ public class TestNetServer {
     public void serverBasic() throws Exception {
         ILogger logger = SystemOutLogger.instance();
 
-        Configuration c = new Configuration();
+        IConfiguration c = Cfg.getEntryBean().getConfiguration();
 
         IProcessor proc = new LogicServer(c, logger) {
             @Override ValueObject getFromDB(String userName) {
@@ -43,11 +45,18 @@ public class TestNetServer {
         final int clientThreads = 40;
         final int consequentRequests = 2500;
 
-        final boolean testingDuiplicates = true;
+        final int duplicateDistance = 4;
+
+        // [!!!] Note: this opetion makes the test flaky.
+        // Problem is that currently we cannot guarantee that the duplicated request
+        // really stays in history -- it can be evicted.
+        // Please bear that in mind while analyzing failures of this test.
+        // This option can be switched off for better reliability.
+        final boolean testingDuplicates = true;
 
         final ILogger logger = SystemOutLogger.instance();
 
-        final Configuration c = new Configuration();
+        final IConfiguration c = Cfg.getEntryBean().getConfiguration();
 
         final int iniBal = 500;
         final int iniBalVersion = 28;
@@ -91,7 +100,8 @@ public class TestNetServer {
                                     dupDelta--; // dup count down
                                 }
 
-                                if (testingDuiplicates && dupDelta == 0) {
+                                if (testingDuplicates && dupDelta == 0) {
+                                    // re-send a duplicate and expect the same response:
                                     assert dupRq != null;
                                     assert dupExpected != null;
 
@@ -123,10 +133,11 @@ public class TestNetServer {
 
                                     assertEquals(expected, actualResponse);
 
-                                    if (testingDuiplicates && dupDelta == -1 && (j % 11) == 0) {
+                                    if (testingDuplicates && dupDelta == -1 && (j % 11) == 0) {
+                                        // remember a request to duplicate it later:
                                         dupExpected = expected;
                                         dupRq = rq;
-                                        dupDelta = 10;
+                                        dupDelta = duplicateDistance;
                                     }
                                 }
                             }
@@ -144,7 +155,7 @@ public class TestNetServer {
         }
 
         svc.shutdown();
-        svc.awaitTermination(3 * 60, TimeUnit.SECONDS);
+        svc.awaitTermination(3 * 60, TimeUnit.SECONDS); // Timeout of 3 minutes.
 
         server.stop();
 

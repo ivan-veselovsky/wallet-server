@@ -1,6 +1,6 @@
 package edu.wallet.server.net;
 
-import edu.wallet.server.*;
+import edu.wallet.log.*;
 import java.io.*;
 import java.nio.channels.*;
 import java.util.*;

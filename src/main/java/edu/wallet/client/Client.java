@@ -1,19 +1,29 @@
 package edu.wallet.client;
 
+import edu.wallet.config.*;
 import edu.wallet.server.*;
 import java.io.*;
 import java.net.*;
 
+/**
+ * The Client of Wallet server.
+ */
 public class Client implements Closeable {
 
     private final Socket clientSocket;
     private final InputStream is;
     private final OutputStream os;
 
-    public static void main(String[] args) {}
+    public static void main(String[] args) {
+        // TODO: make a telenet-like client that would read stdIn as requetsts and write the responses to stdOut.
+    }
 
     public Client() throws IOException {
-        clientSocket = new Socket("localhost", 8888);
+        IConfiguration c = Cfg.getEntryBean().getConfiguration();
+        int port = c.getServerPort();
+
+        // TODO: address should also be configurable.
+        clientSocket = new Socket("localhost", port);
 
         is = clientSocket.getInputStream();
         os = clientSocket.getOutputStream();
@@ -26,8 +36,6 @@ public class Client implements Closeable {
             m2 = m2.concat(Const.EOM_MARKER);
         }
 
-        System.out.println("Written request: [" + msg + "]");
-
         byte[] bb = m2.getBytes(Const.UTF8);
 
         return send(bb);
@@ -38,6 +46,7 @@ public class Client implements Closeable {
 
         os.write(bb);
 
+        // TODO: buffer size may be paramatrized.
         ByteArrayOutputStream baos = new ByteArrayOutputStream(16 * 1024);
 
         int b;
@@ -56,6 +65,7 @@ public class Client implements Closeable {
     }
 
     public void close() throws IOException {
+        // Not necessary to close the streams, socket closing will close them both.
         clientSocket.close();
     }
 }

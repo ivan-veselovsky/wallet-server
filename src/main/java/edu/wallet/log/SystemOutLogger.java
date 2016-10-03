@@ -1,4 +1,4 @@
-package edu.wallet.server;
+package edu.wallet.log;
 
 /**
  *

@@ -1,5 +1,6 @@
 package edu.wallet.server;
 
+import edu.wallet.config.*;
 import edu.wallet.server.model.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -12,10 +13,10 @@ public class StoreToDBCallable implements Runnable {
 
     private final LazyConcurrentMap<String, AtomicReference<ValueObject>> valueObjectLazyMap;
 
-    private final Configuration cfg;
+    private final IConfiguration cfg;
 
 
-    StoreToDBCallable(LazyConcurrentMap<String, AtomicReference<ValueObject>> m, Configuration c) {
+    StoreToDBCallable(LazyConcurrentMap<String, AtomicReference<ValueObject>> m, IConfiguration c) {
         valueObjectLazyMap = m;
         cfg = c;
     }

@@ -1,5 +1,7 @@
 package edu.wallet.server;
 
+import edu.wallet.config.*;
+import edu.wallet.log.*;
 import edu.wallet.server.model.*;
 import java.io.*;
 import java.util.*;
@@ -10,7 +12,7 @@ import java.util.concurrent.atomic.*;
  * Main procesing business logic resides there.
  */
 public class LogicServer implements IProcessor {
-    private final Configuration configuration;
+    private final IConfiguration configuration;
 
     private ILogger logger;
 
@@ -24,7 +26,7 @@ public class LogicServer implements IProcessor {
     private static final byte[] generalServerErrorResponse
         = new Response(-1, Const.ErrorCode.InternalServerError.ordinal(), 0, 0, 0).serialize();
 
-    public LogicServer(Configuration c, ILogger logger) {
+    public LogicServer(IConfiguration c, ILogger logger) {
         assert c != null;
         assert logger != null;
 
