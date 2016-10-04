@@ -1,7 +1,6 @@
 package edu.wallet.server;
 
 import edu.wallet.config.*;
-import edu.wallet.log.*;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -13,12 +12,11 @@ public class TestLogicServer {
 
     @Test
     public void basicProcessing() throws Exception {
-        IConfiguration c = Cfg.getEntryBean().getConfiguration();
+        Cfg cfg = Cfg.getEntryBean();
 
-        ILogger logger = SystemOutLogger.instance();
-
-        LogicServer srv = new LogicServer(c, logger) {
-            @Override ValueObject getFromDB(String userName) {
+        LogicServer srv = new LogicServer(cfg.getConfiguration(), cfg.getLogger(), cfg.getPersistentStorage()) {
+            @Override
+            protected ValueObject getFromDB(String userName) {
                 return new ValueObject(userName, 500, 28);
             }
         };

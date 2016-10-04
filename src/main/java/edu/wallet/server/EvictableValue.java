@@ -1,7 +1,7 @@
 package edu.wallet.server;
 
 /**
- * Created by ivan on 03.10.16.
+ * TODO: clarify, if we do that.
  */
 public interface EvictableValue<K> {
     void evicted(K key);

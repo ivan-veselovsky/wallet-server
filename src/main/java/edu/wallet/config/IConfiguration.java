@@ -3,7 +3,8 @@ package edu.wallet.config;
 import java.util.*;
 
 /**
- * Configuration
+ * Configuration interface to allow pluggable config taken from an arbitrary source..
+ * Example implementations are {@link DefaultConfiguration} and {@link PropertyFileConfiguration}.
  */
 public interface IConfiguration {
     /**

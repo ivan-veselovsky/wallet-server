@@ -6,6 +6,7 @@ import edu.wallet.server.*;
 import java.net.*;
 import java.nio.channels.*;
 import java.nio.channels.spi.*;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
@@ -13,11 +14,8 @@ import java.util.concurrent.atomic.*;
  *
  */
 public class NetServer {
-
     private final IProcessor processor;
-
     private final IConfiguration config;
-
     private final ILogger logger;
 
     private ExecutorService serverExecutor;
@@ -26,15 +24,10 @@ public class NetServer {
     private ExecutorService channelExecutor;
     private ChannelRunnable[] channelRunnables;
 
-
-    public NetServer(IProcessor proc, ILogger logger, IConfiguration cfg) {
-        assert proc != null;
-        assert logger != null;
-        assert cfg != null;
-
-        this.processor = proc;
-        this.logger = logger;
-        this.config = cfg;
+    public NetServer(Cfg cfg) {
+        this.config = Objects.requireNonNull(cfg.getConfiguration());
+        this.logger = Objects.requireNonNull(cfg.getLogger());
+        this.processor = Objects.requireNonNull(cfg.getProcessor());
     }
 
     public void start() throws Exception {
@@ -81,14 +74,11 @@ public class NetServer {
 
             srvrCh.configureBlocking(false);
 
-//                if (sockRcvBuf > 0)
-//                    srvrCh.socket().setReceiveBufferSize(sockRcvBuf);
-
-                // Bind the server socket to the specified address and port
+            // Bind the server socket to the specified address and port
             srvrCh.socket().bind(addr);
 
-                // Register the server socket channel, indicating an interest in
-                // accepting new connections
+            // Register the server socket channel, indicating an interest in
+            // accepting new connections
             srvrCh.register(selector, SelectionKey.OP_ACCEPT);
         }
 

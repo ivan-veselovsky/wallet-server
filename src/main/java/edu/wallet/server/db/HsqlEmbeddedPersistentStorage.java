@@ -1,13 +1,20 @@
 package edu.wallet.server.db;
 
+import edu.wallet.config.*;
+import edu.wallet.log.*;
+import edu.wallet.server.*;
 import java.io.*;
 import java.sql.*;
+import java.util.*;
 import org.hsqldb.*;
 
 /**
- *
+ * HyperSQL implementation of {@link IPersistentStorage}.
  */
-public class Embed {
+public class HsqlEmbeddedPersistentStorage implements IPersistentStorage {
+
+    private final IConfiguration configuration;
+    private final ILogger logger;
 
     public static void main(String[] args) {
 
@@ -54,5 +61,20 @@ public class Embed {
 
         // end of stub code for in/out stub
 
+    }
+
+    public HsqlEmbeddedPersistentStorage(IConfiguration c, ILogger l) {
+        this.configuration = Objects.requireNonNull(c);
+        this.logger = Objects.requireNonNull(l);
+    }
+
+    @Override public ValueObject retrieve(String userNameKey) {
+        // TODO
+        return null;
+    }
+
+    @Override public int save(Collection<ValueObject> voCollection) throws IOException {
+        // TODO
+        return 0;
     }
 }

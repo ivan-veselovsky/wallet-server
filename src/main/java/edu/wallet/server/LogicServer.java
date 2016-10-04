@@ -2,6 +2,7 @@ package edu.wallet.server;
 
 import edu.wallet.config.*;
 import edu.wallet.log.*;
+import edu.wallet.server.db.*;
 import edu.wallet.server.model.*;
 import java.io.*;
 import java.util.*;
@@ -13,8 +14,8 @@ import java.util.concurrent.atomic.*;
  */
 public class LogicServer implements IProcessor {
     private final IConfiguration configuration;
-
-    private ILogger logger;
+    private final ILogger logger;
+    private final IPersistentStorage persistentStorage;
 
     private final LazyConcurrentMap<String, AtomicReference<ValueObject>> valueObjectLazyMap;
 
@@ -26,12 +27,10 @@ public class LogicServer implements IProcessor {
     private static final byte[] generalServerErrorResponse
         = new Response(-1, Const.ErrorCode.InternalServerError.ordinal(), 0, 0, 0).serialize();
 
-    public LogicServer(IConfiguration c, ILogger logger) {
-        assert c != null;
-        assert logger != null;
-
-        this.configuration = c;
-        this.logger = logger;
+    public LogicServer(IConfiguration c, ILogger l, IPersistentStorage p) {
+        this.configuration = Objects.requireNonNull(c);
+        this.logger = Objects.requireNonNull(l);
+        this.persistentStorage = Objects.requireNonNull(p);
 
         LazyConcurrentMap.ValueFactory<String, AtomicReference<ValueObject>> fac
             = new LazyConcurrentMap.ValueFactory<String, AtomicReference<ValueObject>>() {
@@ -68,15 +67,11 @@ public class LogicServer implements IProcessor {
         processingHistoryLazyMap = new LazyConcurrentMap<>(fac2, limited);
     }
 
-    public void setLogger(ILogger logger) {
-        this.logger = logger;
-    }
-
-    ValueObject getFromDB(String userName) {
-        // TODO: gets from DB, null if no such user exists.
-        //return null;
-
-        return null;
+    /*
+     * Visible for testing.
+     */
+    protected ValueObject getFromDB(String userName) {
+        return persistentStorage.retrieve(userName);
     }
 
     @Override public byte[] process(byte[] request) {

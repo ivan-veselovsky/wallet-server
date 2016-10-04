@@ -41,9 +41,6 @@ public class LazyConcurrentMap<K, V> {
         ValueWrapper w = map.get(k);
 
         if (w == null) {
-//            closeLock.readLock().lock();
-//
-//            try {
                 if (closed)
                     throw new IllegalStateException("Failed to create value for key [" + k
                         + "]: the map is already closed.");
@@ -57,10 +54,6 @@ public class LazyConcurrentMap<K, V> {
 
                     w = wNew;
                 }
-//            }
-//            finally {
-//                closeLock.readLock().unlock();
-//            }
         }
 
             V v = w.getValue();
@@ -72,60 +65,14 @@ public class LazyConcurrentMap<K, V> {
 
     public Collection<V> values() {
         Collection<ValueWrapper> c1 = map.values();
+
         List<V> c2 = new ArrayList<>(c1.size());
+
         for (ValueWrapper vw: c1) {
             c2.add(vw.getValue());
         }
         return Collections.unmodifiableList(c2);
     }
-
-    // TODO: do we need close() there?
-//    /**
-//     * Clears the map and closes all the values.
-//     */
-//    public void close() {
-////        closeLock.writeLock().lock();
-////
-////        try {
-//            if (closed)
-//                return;
-//
-//            closed = true;
-//
-//            Exception err = null;
-//
-//            Set<K> keySet = map.keySet();
-//
-//            for (K key : keySet) {
-//                V v = null;
-//
-//                try {
-//                    v = map.get(key).getValue();
-//                }
-//                catch (IgniteCheckedException ignore) {
-//                    // No-op.
-//                }
-//
-//                if (v != null) {
-//                    try {
-//                        v.close();
-//                    }
-//                    catch (Exception err0) {
-//                        if (err == null)
-//                            err = err0;
-//                    }
-//                }
-//            }
-//
-//            map.clear();
-//
-//            if (err != null)
-//                throw new IgniteCheckedException(err);
-////        }
-////        finally {
-////            closeLock.writeLock().unlock();
-////        }
-//    }
 
     public static class CompletableFuture<V> extends FutureTask<V> {
 

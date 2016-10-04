@@ -13,17 +13,34 @@
         <property name="searchSystemEnvironment" value="true"/>
     </bean>
 
-    <bean id="cfg-id" class="edu.wallet.config.Cfg">
+    <bean id="cfg0" class="edu.wallet.config.PropertyFileConfiguration"/>
 
+    <bean id="logger0" class="edu.wallet.log.SystemOutLogger"/>
+
+    <bean id="pers0" class="edu.wallet.server.db.HsqlEmbeddedPersistentStorage" depends-on="cfg0,logger0">
+        <constructor-arg ref="cfg0"/>
+        <constructor-arg ref="logger0"/>
+    </bean>
+
+    <bean id="cfg-id" class="edu.wallet.config.Cfg">
         <property name="configuration">
-            <bean class="edu.wallet.config.PropertyFileConfiguration"/>
+            <ref bean="cfg0"/>
         </property>
 
         <property name="logger">
-            <bean class="edu.wallet.log.SystemOutLogger"/>
+            <ref bean="logger0"/>
         </property>
 
-        <!-- similarly all the other components can be injected there. ... -->
+        <property name="persistentStorage">
+            <ref bean="pers0"/>
+        </property>
 
+        <property name="processor">
+            <bean class="edu.wallet.server.LogicServer" depends-on="cfg0,logger0,pers0">
+                <constructor-arg ref="cfg0"/>
+                <constructor-arg ref="logger0"/>
+                <constructor-arg ref="pers0"/>
+            </bean>
+        </property>
     </bean>
 </beans>

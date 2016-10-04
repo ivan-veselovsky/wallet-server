@@ -1,11 +1,13 @@
 package edu.wallet.config;
 
 import edu.wallet.log.*;
+import edu.wallet.server.*;
+import edu.wallet.server.db.*;
 import org.springframework.context.support.*;
 
 /**
  * Top level bean composing all the subsystem implementations
- * injection, such as Configuration, Logging, etc.
+ * injection, such as Configuration, Logging, PersistentStorage, etc.
  */
 public class Cfg {
 
@@ -20,6 +22,9 @@ public class Cfg {
     }
 
     private IConfiguration configuration;
+    private ILogger logger;
+    private IPersistentStorage persistentStorage;
+    private IProcessor processor;
 
     public IConfiguration getConfiguration() {
         return configuration;
@@ -29,13 +34,27 @@ public class Cfg {
         this.configuration = configuration;
     }
 
-    private ILogger logger;
-
     public void setLogger(ILogger logger) {
         this.logger = logger;
     }
 
     public ILogger getLogger() {
         return logger;
+    }
+
+    public IPersistentStorage getPersistentStorage() {
+        return persistentStorage;
+    }
+
+    public void setPersistentStorage(IPersistentStorage persistentStorage) {
+        this.persistentStorage = persistentStorage;
+    }
+
+    public IProcessor getProcessor() {
+        return processor;
+    }
+
+    public void setProcessor(IProcessor processor) {
+        this.processor = processor;
     }
 }

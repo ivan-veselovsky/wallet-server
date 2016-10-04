@@ -2,7 +2,6 @@ package edu.wallet.server;
 
 import edu.wallet.client.*;
 import edu.wallet.config.*;
-import edu.wallet.log.*;
 import edu.wallet.server.net.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
@@ -16,17 +15,18 @@ public class TestNetServer {
 
     @Test
     public void serverBasic() throws Exception {
-        ILogger logger = SystemOutLogger.instance();
+        Cfg cfg = Cfg.getEntryBean();
 
-        IConfiguration c = Cfg.getEntryBean().getConfiguration();
-
-        IProcessor proc = new LogicServer(c, logger) {
-            @Override ValueObject getFromDB(String userName) {
+        IProcessor proc = new LogicServer(cfg.getConfiguration(), cfg.getLogger(), cfg.getPersistentStorage()) {
+            @Override
+            protected ValueObject getFromDB(String userName) {
                 return new ValueObject(userName, 500, 28);
             }
         };
 
-        NetServer server = new NetServer(proc, logger, c);
+        cfg.setProcessor(proc);
+
+        NetServer server = new NetServer(cfg);
 
         server.start();
 
@@ -54,20 +54,23 @@ public class TestNetServer {
         // This option can be switched off for better reliability.
         final boolean testingDuplicates = true;
 
-        final ILogger logger = SystemOutLogger.instance();
+        final Cfg cfg = Cfg.getEntryBean();
 
-        final IConfiguration c = Cfg.getEntryBean().getConfiguration();
+        final IConfiguration c = cfg.getConfiguration();
 
         final int iniBal = 500;
         final int iniBalVersion = 28;
 
-        final IProcessor proc = new LogicServer(c, logger) {
-            @Override ValueObject getFromDB(String userName) {
+        final IProcessor proc = new LogicServer(cfg.getConfiguration(), cfg.getLogger(), cfg.getPersistentStorage()) {
+            @Override
+            protected ValueObject getFromDB(String userName) {
                 return new ValueObject(userName, iniBal, iniBalVersion);
             }
         };
 
-        final NetServer server = new NetServer(proc, logger, c);
+        cfg.setProcessor(proc);
+
+        final NetServer server = new NetServer(cfg);
 
         server.start();
 
