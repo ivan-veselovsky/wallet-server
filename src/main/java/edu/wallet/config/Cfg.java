@@ -13,12 +13,20 @@ public class Cfg {
 
     private static final String CTX_FILE = "config.xml";
 
-    private static final AbstractApplicationContext ctx = new ClassPathXmlApplicationContext(CTX_FILE);
+    private static Cfg cfg;
 
-    private static final Cfg cfg = (Cfg)ctx.getBean("cfg-id");
+    public static synchronized Cfg getEntryBean() {
+        if (cfg == null) {
+            AbstractApplicationContext ctx = new ClassPathXmlApplicationContext(CTX_FILE);
 
-    public static Cfg getEntryBean() {
+            cfg = (Cfg)ctx.getBean("cfg-id");
+        }
+
         return cfg;
+    }
+
+    public static synchronized void destroy() {
+        cfg = null;
     }
 
     private IConfiguration configuration;

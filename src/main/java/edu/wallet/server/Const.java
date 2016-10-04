@@ -20,13 +20,13 @@ public class Const {
      * Ordinals of this enum are sent to client as the error codes.
      */
     public static enum ErrorCode {
-        Okay,
-        UserBlacklisted,
-        BalanceChangeLimitExceeded,
-        DuplicateTransactionId,
-        NegativeBalance,
-        badRequest,
-        InternalServerError,
+        Okay,                       // 0
+        UserBlacklisted,            // 1
+        BalanceChangeLimitExceeded, // 2
+        DuplicateTransactionId,     // 3
+        NegativeBalance,            // 4
+        badRequest,                 // 5
+        InternalServerError,        // 6
     }
 
 }

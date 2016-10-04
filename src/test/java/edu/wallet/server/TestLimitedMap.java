@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class TestLimitedMap {
+public class TestLimitedMap extends Base {
 
     static class EvictableLong implements EvictableValue<Long> {
         @Override public void evicted(Long key) {

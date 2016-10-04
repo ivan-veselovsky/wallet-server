@@ -3,6 +3,7 @@ package edu.wallet.server.net;
 import edu.wallet.config.*;
 import edu.wallet.log.*;
 import edu.wallet.server.*;
+import java.io.*;
 import java.net.*;
 import java.nio.channels.*;
 import java.nio.channels.spi.*;
@@ -13,10 +14,13 @@ import java.util.concurrent.atomic.*;
 /**
  *
  */
-public class NetServer {
+public class NetServer implements Closeable {
+    private final AtomicInteger roundRobinIndex = new AtomicInteger();
+
     private final IProcessor processor;
     private final IConfiguration config;
     private final ILogger logger;
+    private final Cfg cfg;
 
     private ExecutorService serverExecutor;
     private ServerChannelRunnable serverRunnable;
@@ -25,6 +29,7 @@ public class NetServer {
     private ChannelRunnable[] channelRunnables;
 
     public NetServer(Cfg cfg) {
+        this.cfg = Objects.requireNonNull(cfg);
         this.config = Objects.requireNonNull(cfg.getConfiguration());
         this.logger = Objects.requireNonNull(cfg.getLogger());
         this.processor = Objects.requireNonNull(cfg.getProcessor());
@@ -85,8 +90,6 @@ public class NetServer {
         return selector;
     }
 
-    private final AtomicInteger roundRobinIndex = new AtomicInteger();
-
     private int incModAndGet(int module) {
         while (true) {
             int idx = roundRobinIndex.get();
@@ -106,23 +109,31 @@ public class NetServer {
         channelRunnables[idx].offer(sockCh);
     }
 
-    public void stop() throws Exception {
+    public void close() throws IOException {
         serverRunnable.stop();
 
         for (int i=0; i<channelRunnables.length; i++) {
             channelRunnables[i].stop();
         }
 
-        Thread.sleep(1000);
+        try {
+            Thread.sleep(1000); // rough grace gap to allow all runnables to stop themselves.
 
-        serverExecutor.shutdownNow();
-        channelExecutor.shutdownNow();
+            serverExecutor.shutdownNow();
+            channelExecutor.shutdownNow();
 
-        boolean t1 = serverExecutor.awaitTermination(1, TimeUnit.SECONDS);
-        boolean t2 = channelExecutor.awaitTermination(1, TimeUnit.SECONDS);
+            boolean t1 = serverExecutor.awaitTermination(1, TimeUnit.SECONDS);
+            boolean t2 = channelExecutor.awaitTermination(1, TimeUnit.SECONDS);
 
-        if (!t1 || !t2) {
-            throw new Exception("Failed to stop the server.");
+            processor.close(); // NB: Db Saver will be closed there.
+
+            cfg.getPersistentStorage().close();
+
+            if (!t1 || !t2) {
+                throw new Exception("Failed to stop the server.");
+            }
+        } catch (Exception e) {
+            throw new IOException(e);
         }
     }
 }

@@ -10,7 +10,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
 /**
- *
+ * TODO: better tests for saver.
  */
 public class DbSaver implements Closeable {
 
@@ -24,12 +24,12 @@ public class DbSaver implements Closeable {
 
     private ScheduledExecutorService srvc;
 
-    public DbSaver(LazyConcurrentMap<String, AtomicReference<ValueObject>> m, Cfg cfg) {
+    public DbSaver(LazyConcurrentMap<String, AtomicReference<ValueObject>> m, IConfiguration c, ILogger l, IPersistentStorage p) {
         valueObjectLazyMap = m;
 
-        this.configuration = Objects.requireNonNull(cfg.getConfiguration());
-        this.logger = Objects.requireNonNull(cfg.getLogger());
-        this.persistentStorage = Objects.requireNonNull(cfg.getPersistentStorage());
+        this.configuration = Objects.requireNonNull(c);
+        this.logger = Objects.requireNonNull(l);
+        this.persistentStorage = Objects.requireNonNull(p);
     }
 
     void runImpl() {

@@ -2,7 +2,9 @@ package edu.wallet.server;
 
 import edu.wallet.client.*;
 import edu.wallet.config.*;
+import edu.wallet.server.db.*;
 import edu.wallet.server.net.*;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import org.junit.*;
@@ -11,33 +13,27 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class TestNetServer {
+public class TestNetServer extends Base {
 
     @Test
     public void serverBasic() throws Exception {
         Cfg cfg = Cfg.getEntryBean();
 
-        IProcessor proc = new LogicServer(cfg.getConfiguration(), cfg.getLogger(), cfg.getPersistentStorage()) {
-            @Override
-            protected ValueObject getFromDB(String userName) {
-                return new ValueObject(userName, 500, 28);
-            }
-        };
+        IPersistentStorage ps = cfg.getPersistentStorage();
 
-        cfg.setProcessor(proc);
+        ps.clear();
 
-        NetServer server = new NetServer(cfg);
+        ps.save(Collections.singleton(new ValueObject("ivan", 500, 28)));
 
-        server.start();
+        try (final NetServer server = new NetServer(cfg)) {
+            server.start();
 
-        Client client = new Client();
+            Client client = new Client();
 
-        String actualResponse = client.send("{\"transactionId\":12345,\"balanceChange\":-499,\"user\":\"ivan\"}\n");
+            String actualResponse = client.send("{\"transactionId\":12345,\"balanceChange\":-499,\"user\":\"ivan\"}\n");
 
-        assertEquals("{\"transactionId\":12345,\"outgoingBalance\":1,\"balanceChange\":-499,\"errorCode\":0," +
-            "\"balanceVersion\":29}", actualResponse);
-
-        server.stop();
+            assertEquals("{\"transactionId\":12345,\"outgoingBalance\":1,\"balanceChange\":-499,\"errorCode\":0," + "\"balanceVersion\":29}", actualResponse);
+        }
     }
 
     @Test
@@ -58,111 +54,112 @@ public class TestNetServer {
 
         final IConfiguration c = cfg.getConfiguration();
 
+        cfg.getPersistentStorage().clear();
+
         final int iniBal = 500;
         final int iniBalVersion = 28;
 
-        final IProcessor proc = new LogicServer(cfg.getConfiguration(), cfg.getLogger(), cfg.getPersistentStorage()) {
-            @Override
-            protected ValueObject getFromDB(String userName) {
-                return new ValueObject(userName, iniBal, iniBalVersion);
-            }
-        };
+        List<ValueObject> list = new ArrayList<>(clientThreads);
 
-        cfg.setProcessor(proc);
+        for (int i = 0; i < clientThreads; i++) {
+            final String u = "ivan" + i;
+            list.add(new ValueObject(u, iniBal, iniBalVersion));
+        }
 
-        final NetServer server = new NetServer(cfg);
+        int upd = cfg.getPersistentStorage().save(list);
 
-        server.start();
+        assertEquals(clientThreads, upd);
 
-        final AtomicReference<Throwable> th = new AtomicReference<>();
+        try (final NetServer server = new NetServer(cfg)) {
+            server.start();
 
-        final ExecutorService svc =  Executors.newFixedThreadPool(clientThreads);
+            final AtomicReference<Throwable> th = new AtomicReference<>();
 
-        final AtomicLong txId = new AtomicLong(12345);
+            final ExecutorService svc = Executors.newFixedThreadPool(clientThreads);
 
-        for (int i=0; i<clientThreads; i++) {
-            final int threadIndex = i;
+            final AtomicLong txId = new AtomicLong(12345);
 
-            Runnable r = new Runnable() {
-                @Override public void run() {
-                    try {
-                        int bal = iniBal;
-                        long balVersion = iniBalVersion;
+            for (int i = 0; i < clientThreads; i++) {
+                final int threadIndex = i;
 
-                        Request dupRq = null;
-                        String dupExpected = null;
-                        int dupDelta = -1;
+                Runnable r = new Runnable() {
+                    @Override public void run() {
+                        try {
+                            int bal = iniBal;
+                            long balVersion = iniBalVersion;
 
-                        try (Client client = new Client()) {
-                            for (int j=0; j < consequentRequests; j++) {
-                                if (th.get() != null) {
-                                    break;
-                                }
+                            Request dupRq = null;
+                            String dupExpected = null;
+                            int dupDelta = -1;
 
-                                if (dupDelta > 0) {
-                                    dupDelta--; // dup count down
-                                }
+                            try (Client client = new Client()) {
+                                for (int j = 0; j < consequentRequests; j++) {
+                                    if (th.get() != null) {
+                                        break;
+                                    }
 
-                                if (testingDuplicates && dupDelta == 0) {
-                                    // re-send a duplicate and expect the same response:
-                                    assert dupRq != null;
-                                    assert dupExpected != null;
+                                    if (dupDelta > 0) {
+                                        dupDelta--; // dup count down
+                                    }
 
-                                    System.out.println("sending dup: " + dupRq);
+                                    if (testingDuplicates && dupDelta == 0) {
+                                        // re-send a duplicate and expect the same response:
+                                        assert dupRq != null;
+                                        assert dupExpected != null;
 
-                                    String actualResponse = client.send(dupRq.serialize());
+                                        System.out.println("sending dup: " + dupRq);
 
-                                    assertEquals(dupExpected, actualResponse);
+                                        String actualResponse = client.send(dupRq.serialize());
 
-                                    dupExpected = null;
-                                    dupRq = null;
-                                    dupDelta = -1;
-                                }
-                                else {
-                                    String u = "ivan" + threadIndex;
-                                    long tx = txId.incrementAndGet();
-                                    int balChange = j <= c.getMaxBalanceChange() ? j : c.getMaxBalanceChange();
+                                        assertEquals(dupExpected, actualResponse);
 
-                                    Request rq = new Request(u, tx, balChange);
+                                        dupExpected = null;
+                                        dupRq = null;
+                                        dupDelta = -1;
+                                    }
+                                    else {
+                                        final String u = "ivan" + threadIndex;
+                                        long tx = txId.incrementAndGet();
+                                        int balChange = j <= c.getMaxBalanceChange() ? j : c.getMaxBalanceChange();
 
-                                    String actualResponse = client.send(rq.serialize());
+                                        Request rq = new Request(u, tx, balChange);
 
-                                    bal += balChange;
-                                    balVersion++;
+                                        String actualResponse = client.send(rq.serialize());
 
-                                    String expected = "{\"transactionId\":" + tx + ",\"outgoingBalance\":" + bal
-                                        + ",\"balanceChange\":" + balChange + ",\"errorCode\":0,"
-                                        + "\"balanceVersion\":" + balVersion + "}";
+                                        bal += balChange;
+                                        balVersion++;
 
-                                    assertEquals(expected, actualResponse);
+                                        String expected = "{\"transactionId\":" + tx + ",\"outgoingBalance\":" + bal + ",\"balanceChange\":" + balChange + ",\"errorCode\":0," + "\"balanceVersion\":" + balVersion + "}";
 
-                                    if (testingDuplicates && dupDelta == -1 && (j % 11) == 0) {
-                                        // remember a request to duplicate it later:
-                                        dupExpected = expected;
-                                        dupRq = rq;
-                                        dupDelta = duplicateDistance;
+
+                                        assertEquals(expected, actualResponse);
+
+                                        if (testingDuplicates && dupDelta == -1 && (j % 11) == 0) {
+                                            // remember a request to duplicate it later:
+                                            dupExpected = expected;
+                                            dupRq = rq;
+                                            dupDelta = duplicateDistance;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    catch (Throwable t) {
-                        t.printStackTrace();
+                        catch (Throwable t) {
+                            t.printStackTrace();
 
-                        th.compareAndSet(null, t);
+                            th.compareAndSet(null, t);
+                        }
                     }
-                }
-            };
+                };
 
-            svc.submit(r);
+                svc.submit(r);
+            }
+
+            svc.shutdown();
+            svc.awaitTermination(3 * 60, TimeUnit.SECONDS); // Timeout of 3 minutes.
+
+            assertNull(th.get());
         }
-
-        svc.shutdown();
-        svc.awaitTermination(3 * 60, TimeUnit.SECONDS); // Timeout of 3 minutes.
-
-        server.stop();
-
-        assertNull(th.get());
     }
 
 }

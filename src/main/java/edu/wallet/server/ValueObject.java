@@ -8,7 +8,7 @@ public class ValueObject {
     public final int currentBalance;
     public final long balanceVersion;
 
-    ValueObject(String userName, int currentBalance, long balanceVersion) {
+    public ValueObject(String userName, int currentBalance, long balanceVersion) {
         this.userName = userName;
         this.currentBalance = currentBalance;
         this.balanceVersion = balanceVersion;

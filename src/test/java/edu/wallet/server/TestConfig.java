@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class TestConfig {
+public class TestConfig extends Base {
 
     @Test
     public void configFromProperties() {
@@ -24,5 +24,4 @@ public class TestConfig {
         assertEquals(20, c.getNumThreads());
         assertEquals(8888, c.getServerPort());
     }
-
 }

@@ -21,6 +21,8 @@ public class LogicServer implements IProcessor {
 
     private final LazyConcurrentMap<Request, Response> processingHistoryLazyMap;
 
+    private final DbSaver dbSaver;
+
     private static final byte[] badRequestResponse
         = new Response(-1, Const.ErrorCode.badRequest.ordinal(), 0, 0, 0).serialize();
 
@@ -58,6 +60,8 @@ public class LogicServer implements IProcessor {
             }
         };
 
+        this.dbSaver = new DbSaver(valueObjectLazyMap, configuration, logger, persistentStorage);
+
         final int hardLimit = configuration.getMaxHistory();
         final int numThreads = configuration.getNumThreads();
 
@@ -65,6 +69,8 @@ public class LogicServer implements IProcessor {
         LimitedConcurrentMap<Request, EvictableValue<Request>> limited = new LimitedConcurrentMap<>(map0, hardLimit,
             numThreads);
         processingHistoryLazyMap = new LazyConcurrentMap<>(fac2, limited);
+
+        dbSaver.start();
     }
 
     /*
@@ -210,5 +216,9 @@ public class LogicServer implements IProcessor {
         }
 
         return Const.ErrorCode.Okay;
+    }
+
+    @Override public void close() throws IOException {
+        dbSaver.close();
     }
 }

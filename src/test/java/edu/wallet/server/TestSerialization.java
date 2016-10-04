@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class TestSerialization {
+public class TestSerialization extends Base {
     @Test
     public void serDeRequest() {
         Request rq = new Request("user", 12345, -5);

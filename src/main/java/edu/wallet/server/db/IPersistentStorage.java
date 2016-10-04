@@ -8,7 +8,7 @@ import java.util.*;
  * Decouples persistent storage from model and transport.
  * Note: operations may be long-running.
  */
-public interface IPersistentStorage {
+public interface IPersistentStorage extends Closeable {
     /**
      * As parameter suggests, implies some batch-processing.
      * Values that exist assumed to be replaced.
@@ -24,4 +24,10 @@ public interface IPersistentStorage {
      * @return The value object, or null, if no such object exists.
      */
     ValueObject retrieve(String userNameKey);
+
+    /**
+     * Clears (truncates) the table.
+     * Visible for testing only.
+     */
+    void clear();
 }
