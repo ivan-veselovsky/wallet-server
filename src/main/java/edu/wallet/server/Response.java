@@ -10,7 +10,7 @@ public class Response {
     long transactionId;
     int errorCode;
     long balanceVersion;
-    int balanceChange; // TODO: why is the change is sent back to the client?
+    int balanceChange; // TODO: why the change is sent back to the client?
     int outgoingBalance;
 
     Response(long tx, int errorCode, long balanceVersion, int balanceChange, int outgoingBalance) {
