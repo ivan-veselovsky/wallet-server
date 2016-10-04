@@ -48,7 +48,7 @@ public class TestNetServer extends Base {
         // really stays in history -- it can be evicted.
         // Please bear that in mind while analyzing failures of this test.
         // This option can be switched off for better reliability.
-        final boolean testingDuplicates = true;
+        final boolean testingDuplicates = false;
 
         final Cfg cfg = Cfg.getEntryBean();
 
