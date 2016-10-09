@@ -1,11 +1,13 @@
 package edu.wallet.server;
 
-import edu.wallet.config.*;
+import edu.wallet.config.Cfg;
 import org.json.JSONObject;
-import org.junit.*;
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
 
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -28,13 +30,14 @@ public class Base {
 
     /**
      * Expectes the 2 Strings to be simple serialized JSON objects, and
+     *
      * @param expect
      * @param actual
      */
     public static void assertJsonObjectsEqual(String expect, String actual) {
-        Map<String,Object> e = new JSONObject(expect).toMap();
-        Map<String,Object> a = new JSONObject(actual).toMap();
+        Map<String, Object> e = new JSONObject(expect).toMap();
+        Map<String, Object> a = new JSONObject(actual).toMap();
 
-        assertEquals("expected=["+expect+"], actual=["+a+"]", e, a);
+        assertEquals("expected=[" + expect + "], actual=[" + a + "]", e, a);
     }
 }

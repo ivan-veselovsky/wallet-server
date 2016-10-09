@@ -1,18 +1,26 @@
 package edu.wallet.server.db;
 
-import edu.wallet.config.*;
-import edu.wallet.log.*;
-import edu.wallet.server.*;
-import java.io.*;
-import java.sql.*;
-import java.util.*;
-import java.util.concurrent.locks.*;
-import org.hsqldb.*;
+import edu.wallet.config.IConfiguration;
+import edu.wallet.log.ILogger;
+import edu.wallet.server.ValueObject;
+import org.hsqldb.Server;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * HyperSQL implementation of {@link IPersistentStorage}.
  * DDL: PLAYER(USERNAME, BALANCE_VERSION, BALANCE)
- *
+ * <p>
  * TODO: move to configuration: db url, db name, admin user name, table name, drop key.
  */
 public class HsqlEmbeddedPersistentStorage implements IPersistentStorage, Closeable {
@@ -72,16 +80,16 @@ public class HsqlEmbeddedPersistentStorage implements IPersistentStorage, Closea
      */
     private PreparedStatement createUpdateStatement() throws Exception {
         return connection.prepareStatement("merge into " + playerTable + " as t using " +
-            "(values(?, ?, ?)) as vals(x,y,z)" + " on t.username=vals.x " + " when matched then update set t" +
-            ".balance_version=vals.y, t.balance=vals.z " + " WHEN NOT MATCHED THEN INSERT VALUES vals.x, vals.y, " +
-            "vals.z;");
+                "(values(?, ?, ?)) as vals(x,y,z)" + " on t.username=vals.x " + " when matched then update set t" +
+                ".balance_version=vals.y, t.balance=vals.z " + " WHEN NOT MATCHED THEN INSERT VALUES vals.x, vals.y, " +
+                "vals.z;");
     }
 
     /*
      * NB: re-create statement for concurrency reasons:
      */
     private PreparedStatement createRetrieveStatement() throws Exception {
-        return connection.prepareStatement("select username, balance_version, balance from "+playerTable +" where username=? ;");
+        return connection.prepareStatement("select username, balance_version, balance from " + playerTable + " where username=? ;");
     }
 
     public void close() throws IOException {
@@ -92,24 +100,22 @@ public class HsqlEmbeddedPersistentStorage implements IPersistentStorage, Closea
                 final Connection conn = connection;
                 if (conn != null)
                     conn.close();
-            }
-            finally {
+            } finally {
                 final Server srv = hsqlServer;
                 if (srv != null)
                     srv.stop();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new IOException(e);
-        }
-        finally {
+        } finally {
             rwLock.writeLock().unlock();
 
             closed = true;
         }
     }
 
-    @Override public ValueObject retrieve(String userNameKey) {
+    @Override
+    public ValueObject retrieve(String userNameKey) {
         assert userNameKey != null;
 
         rwLock.readLock().lock();
@@ -132,21 +138,19 @@ public class HsqlEmbeddedPersistentStorage implements IPersistentStorage, Closea
                 int bal = rs.getInt(3);
 
                 return new ValueObject(name, bal, balanceVer);
-            }
-            else {
+            } else {
                 return null;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-        finally {
+        } finally {
             rwLock.readLock().unlock();
         }
     }
 
     // TODO: investigate if possible to use batch insert syntax (a,b),(c,d), ...
-    @Override public int save(Collection<ValueObject> voCollection) throws IOException {
+    @Override
+    public int save(Collection<ValueObject> voCollection) throws IOException {
         rwLock.readLock().lock();
         try {
             if (closed)
@@ -156,7 +160,7 @@ public class HsqlEmbeddedPersistentStorage implements IPersistentStorage, Closea
 
             PreparedStatement ps = createUpdateStatement();
 
-            for (ValueObject vo: voCollection) {
+            for (ValueObject vo : voCollection) {
                 ps.setString(1, vo.userName);
                 ps.setLong(2, vo.balanceVersion);
                 ps.setInt(3, vo.currentBalance);
@@ -174,7 +178,8 @@ public class HsqlEmbeddedPersistentStorage implements IPersistentStorage, Closea
         }
     }
 
-    @Override public void clear() {
+    @Override
+    public void clear() {
         rwLock.writeLock().lock();
         try {
             if (closed)

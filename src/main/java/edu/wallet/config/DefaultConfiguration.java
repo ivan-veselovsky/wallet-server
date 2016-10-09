@@ -1,6 +1,7 @@
 package edu.wallet.config;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Simple POJO bean with mutable properties.

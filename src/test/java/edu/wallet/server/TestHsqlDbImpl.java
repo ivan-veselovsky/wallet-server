@@ -1,11 +1,14 @@
 package edu.wallet.server;
 
-import edu.wallet.config.*;
-import edu.wallet.server.db.*;
-import java.util.*;
-import org.junit.*;
+import edu.wallet.config.Cfg;
+import edu.wallet.server.db.HsqlEmbeddedPersistentStorage;
+import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -15,7 +18,7 @@ public class TestHsqlDbImpl extends Base {
     public void simplePutAndRetrieve() throws Exception {
         Cfg cfg = Cfg.getEntryBean();
 
-        try (HsqlEmbeddedPersistentStorage st = (HsqlEmbeddedPersistentStorage)cfg.getPersistentStorage()) {
+        try (HsqlEmbeddedPersistentStorage st = (HsqlEmbeddedPersistentStorage) cfg.getPersistentStorage()) {
             ValueObject vo1 = new ValueObject("ivan", 10, 0);
 
             int upd = st.save(Collections.singleton(vo1));

@@ -1,13 +1,17 @@
 package edu.wallet.server;
 
-import edu.wallet.config.*;
-import edu.wallet.log.*;
-import edu.wallet.server.db.*;
-import edu.wallet.server.model.*;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import edu.wallet.config.IConfiguration;
+import edu.wallet.log.ILogger;
+import edu.wallet.server.db.DbSaver;
+import edu.wallet.server.db.IPersistentStorage;
+import edu.wallet.server.model.LazyConcurrentMap;
+import edu.wallet.server.model.LimitedConcurrentMap;
+
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Main procesing business logic resides there.
@@ -24,10 +28,10 @@ public class LogicServer implements IProcessor {
     private final DbSaver dbSaver;
 
     private static final byte[] badRequestResponse
-        = new Response(-1, Const.ErrorCode.badRequest.ordinal(), 0, 0, 0).serialize();
+            = new Response(-1, Const.ErrorCode.badRequest.ordinal(), 0, 0, 0).serialize();
 
     private static final byte[] generalServerErrorResponse
-        = new Response(-1, Const.ErrorCode.InternalServerError.ordinal(), 0, 0, 0).serialize();
+            = new Response(-1, Const.ErrorCode.InternalServerError.ordinal(), 0, 0, 0).serialize();
 
     public LogicServer(IConfiguration c, ILogger l, IPersistentStorage p) {
         this.configuration = Objects.requireNonNull(c);
@@ -35,8 +39,9 @@ public class LogicServer implements IProcessor {
         this.persistentStorage = Objects.requireNonNull(p);
 
         LazyConcurrentMap.ValueFactory<String, AtomicReference<ValueObject>> fac
-            = new LazyConcurrentMap.ValueFactory<String, AtomicReference<ValueObject>>() {
-            @Override public AtomicReference<ValueObject> createValue(String key) throws IOException {
+                = new LazyConcurrentMap.ValueFactory<String, AtomicReference<ValueObject>>() {
+            @Override
+            public AtomicReference<ValueObject> createValue(String key) throws IOException {
                 // This may be heavy operation since it accesses DB:
                 ValueObject vo = getFromDB(key);
 
@@ -51,7 +56,8 @@ public class LogicServer implements IProcessor {
         valueObjectLazyMap = new LazyConcurrentMap<>(fac, new ConcurrentHashMap<String, Object>());
 
         LazyConcurrentMap.ValueFactory<Request, Response> fac2 = new LazyConcurrentMap.ValueFactory<Request, Response>() {
-            @Override public Response createValue(Request rq) throws IOException {
+            @Override
+            public Response createValue(Request rq) throws IOException {
                 assert rq != null;
                 assert rq.userName != null;
                 assert rq.userName.length() > 0;
@@ -67,7 +73,7 @@ public class LogicServer implements IProcessor {
 
         ConcurrentHashMap<Request, EvictableValue<Request>> map0 = new ConcurrentHashMap<>();
         LimitedConcurrentMap<Request, EvictableValue<Request>> limited = new LimitedConcurrentMap<>(map0, hardLimit,
-            numThreads);
+                numThreads);
         processingHistoryLazyMap = new LazyConcurrentMap<>(fac2, limited);
 
         dbSaver.start();
@@ -80,7 +86,8 @@ public class LogicServer implements IProcessor {
         return persistentStorage.retrieve(userName);
     }
 
-    @Override public byte[] process(byte[] request) {
+    @Override
+    public byte[] process(byte[] request) {
         try {
             Request rq = new Request().deserialize(request);
 
@@ -139,10 +146,10 @@ public class LogicServer implements IProcessor {
             // NB: user cannot know current balance and its version
             // by sending an invalid requests.
             return new Response(rq.transactionId,
-                errorCode.ordinal(),
-                -1L, // unknown balance version
-                0,
-                -1); // unknown current balance
+                    errorCode.ordinal(),
+                    -1L, // unknown balance version
+                    0,
+                    -1); // unknown current balance
         }
 
         // 2. Now take the actual response either from history, or by direct processing:
@@ -151,6 +158,7 @@ public class LogicServer implements IProcessor {
 
     /**
      * Actual processing related to ValueObject model goes there:
+     *
      * @param rq The request.
      * @return The response.
      */
@@ -173,7 +181,7 @@ public class LogicServer implements IProcessor {
                 // Negative balance case.
                 // Notice that ValueObject is not changed in this case.
                 return new Response(rq.transactionId, Const.ErrorCode.NegativeBalance.ordinal(), vo.balanceVersion,
-                    0/*change*/, vo.currentBalance);
+                        0/*change*/, vo.currentBalance);
             }
 
             // inc the balance version:
@@ -182,7 +190,7 @@ public class LogicServer implements IProcessor {
             ValueObject newVo = new ValueObject(rq.userName, newBalance, newBalanceVersion);
 
             Response rsp = new Response(rq.transactionId, Const.ErrorCode.Okay.ordinal(), newBalanceVersion,
-                rq.balanceChange, newBalance);
+                    rq.balanceChange, newBalance);
 
             if (voRef.compareAndSet(vo, newVo)) {
                 return rsp;
@@ -192,6 +200,7 @@ public class LogicServer implements IProcessor {
 
     /**
      * Perform "stateless" validation, without the currect value object state.
+     *
      * @return error code.
      */
     private Const.ErrorCode validate(Request rq) {
@@ -204,7 +213,7 @@ public class LogicServer implements IProcessor {
 
         assert limit > 0;
 
-        if (Math.abs(rq.balanceChange) > limit) {
+        if (Const.safeAbs(rq.balanceChange) > limit) {
             return Const.ErrorCode.BalanceChangeLimitExceeded;
         }
 
@@ -218,7 +227,8 @@ public class LogicServer implements IProcessor {
         return Const.ErrorCode.Okay;
     }
 
-    @Override public void close() throws IOException {
+    @Override
+    public void close() throws IOException {
         dbSaver.close();
     }
 }

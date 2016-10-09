@@ -1,6 +1,6 @@
 package edu.wallet.server;
 
-import org.json.*;
+import org.json.JSONObject;
 
 /**
  * client->server: username, transaction id, balance change
@@ -26,10 +26,10 @@ public class Request {
 
     private String toStr() {
         return new JSONObject()
-            .accumulate(Field.user.name(), userName)
-            .accumulate(Field.transactionId.name(), transactionId)
-            .accumulate(Field.balanceChange.name(), balanceChange)
-            .toString();
+                .accumulate(Field.user.name(), userName)
+                .accumulate(Field.transactionId.name(), transactionId)
+                .accumulate(Field.balanceChange.name(), balanceChange)
+                .toString();
     }
 
     public Request deserialize(byte[] bb) {
@@ -42,15 +42,18 @@ public class Request {
         return this;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return toStr();
     }
 
-    @Override public int hashCode() {
-        return (int)(transactionId ^ (transactionId >>> 32));
+    @Override
+    public int hashCode() {
+        return (int) (transactionId ^ (transactionId >>> 32));
     }
 
-    @Override public boolean equals(Object obj) {
+    @Override
+    public boolean equals(Object obj) {
         if (obj == this) {
             return true;
         }
@@ -59,6 +62,6 @@ public class Request {
             return false;
         }
 
-        return ((Request)obj).transactionId == transactionId;
+        return ((Request) obj).transactionId == transactionId;
     }
 }

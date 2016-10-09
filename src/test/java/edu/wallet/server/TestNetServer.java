@@ -1,14 +1,23 @@
 package edu.wallet.server;
 
-import edu.wallet.client.*;
-import edu.wallet.config.*;
-import edu.wallet.server.db.*;
-import edu.wallet.server.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-import org.junit.*;
-import static org.junit.Assert.*;
+import edu.wallet.client.Client;
+import edu.wallet.config.Cfg;
+import edu.wallet.config.IConfiguration;
+import edu.wallet.server.db.IPersistentStorage;
+import edu.wallet.server.net.NetServer;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  *
@@ -34,7 +43,7 @@ public class TestNetServer extends Base {
 
             assertJsonObjectsEqual(
                     "{\"transactionId\":12345,\"outgoingBalance\":1,\"balanceChange\":-499,\"errorCode\":0,"
-                    + "\"balanceVersion\":29}", actualResponse);
+                            + "\"balanceVersion\":29}", actualResponse);
         }
     }
 
@@ -85,7 +94,8 @@ public class TestNetServer extends Base {
                 final int threadIndex = i;
 
                 Runnable r = new Runnable() {
-                    @Override public void run() {
+                    @Override
+                    public void run() {
                         try {
                             int bal = iniBal;
                             long balVersion = iniBalVersion;
@@ -118,8 +128,7 @@ public class TestNetServer extends Base {
                                         dupExpected = null;
                                         dupRq = null;
                                         dupDelta = -1;
-                                    }
-                                    else {
+                                    } else {
                                         final String u = "ivan" + threadIndex;
                                         long tx = txId.incrementAndGet();
                                         int balChange = j <= c.getMaxBalanceChange() ? j : c.getMaxBalanceChange();
@@ -144,8 +153,7 @@ public class TestNetServer extends Base {
                                     }
                                 }
                             }
-                        }
-                        catch (Throwable t) {
+                        } catch (Throwable t) {
                             t.printStackTrace();
 
                             th.compareAndSet(null, t);

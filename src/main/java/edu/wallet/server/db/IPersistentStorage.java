@@ -1,8 +1,10 @@
 package edu.wallet.server.db;
 
-import edu.wallet.server.*;
-import java.io.*;
-import java.util.*;
+import edu.wallet.server.ValueObject;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Decouples persistent storage from model and transport.
@@ -12,6 +14,7 @@ public interface IPersistentStorage extends Closeable {
     /**
      * As parameter suggests, implies some batch-processing.
      * Values that exist assumed to be replaced.
+     *
      * @param voCollection The collection to save persistently.
      * @return How many objects were really written (equal objects may be skipped).
      * @throws IOException
@@ -20,6 +23,7 @@ public interface IPersistentStorage extends Closeable {
 
     /**
      * Retrieves data (1 cortege) from persistent storage.
+     *
      * @param userNameKey The key.
      * @return The value object, or null, if no such object exists.
      */

@@ -1,6 +1,6 @@
 package edu.wallet.server;
 
-import java.io.*;
+import java.io.Closeable;
 
 /**
  * Interface that represents logical processor of the request.

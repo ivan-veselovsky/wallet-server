@@ -1,10 +1,11 @@
 package edu.wallet.server;
 
-import edu.wallet.config.*;
-import java.util.*;
-import org.junit.*;
+import edu.wallet.config.Cfg;
+import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -19,13 +20,13 @@ public class TestLogicServer extends Base {
 
         cfg.getPersistentStorage().save(Collections.singleton(new ValueObject("ivan", 500, 28)));
 
-        LogicServer srv = (LogicServer)cfg.getProcessor();
+        LogicServer srv = (LogicServer) cfg.getProcessor();
 
         Request rq = new Request("ivan", 12345, -499);
 
         System.out.println(rq);
 
-        Response rsp = ((LogicServer)cfg.getProcessor()).process(rq);
+        Response rsp = ((LogicServer) cfg.getProcessor()).process(rq);
 
         System.out.println(rsp);
 

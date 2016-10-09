@@ -10,16 +10,19 @@ public class SystemOutLogger implements ILogger {
         return instance;
     }
 
-    private SystemOutLogger() {}
+    private SystemOutLogger() {
+    }
 
-    @Override public void debug(String message, Throwable t) {
+    @Override
+    public void debug(String message, Throwable t) {
         System.out.println("DEBUG " + message);
         if (t != null) {
             t.printStackTrace(System.out);
         }
     }
 
-    @Override public void info(String message, Throwable t) {
+    @Override
+    public void info(String message, Throwable t) {
         System.out.println("INFO " + message);
         if (t != null) {
             t.printStackTrace(System.out);
@@ -27,7 +30,8 @@ public class SystemOutLogger implements ILogger {
 
     }
 
-    @Override public void error(String message, Throwable t) {
+    @Override
+    public void error(String message, Throwable t) {
         System.out.println("ERROR " + message);
         if (t != null) {
             t.printStackTrace(System.out);

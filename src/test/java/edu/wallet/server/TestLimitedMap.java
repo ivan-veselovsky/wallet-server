@@ -1,11 +1,13 @@
 package edu.wallet.server;
 
-import edu.wallet.server.model.*;
-import java.util.*;
+import edu.wallet.server.model.LimitedConcurrentMap;
+import org.junit.Test;
+
+import java.util.Random;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-import org.junit.*;
-import static org.junit.Assert.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -13,7 +15,8 @@ import static org.junit.Assert.*;
 public class TestLimitedMap extends Base {
 
     static class EvictableLong implements EvictableValue<Long> {
-        @Override public void evicted(Long key) {
+        @Override
+        public void evicted(Long key) {
             // noop
         }
     }
@@ -36,12 +39,13 @@ public class TestLimitedMap extends Base {
 
         final EvictableLong v = new EvictableLong();
 
-        for (int i = 0; i<threads; i++) {
+        for (int i = 0; i < threads; i++) {
             srv.submit(new Runnable() {
-                @Override public void run() {
+                @Override
+                public void run() {
                     int maxSize = 0;
 
-                    for (int i = 0; i<numPutsInEachThread; i++) {
+                    for (int i = 0; i < numPutsInEachThread; i++) {
                         long k = rnd.nextLong();
 
                         lim.putIfAbsent(k, v);

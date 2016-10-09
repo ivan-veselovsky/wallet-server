@@ -1,9 +1,10 @@
 package edu.wallet.config;
 
-import edu.wallet.log.*;
-import edu.wallet.server.*;
-import edu.wallet.server.db.*;
-import org.springframework.context.support.*;
+import edu.wallet.log.ILogger;
+import edu.wallet.server.IProcessor;
+import edu.wallet.server.db.IPersistentStorage;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Top level bean composing all the subsystem implementations
@@ -19,7 +20,7 @@ public class Cfg {
         if (cfg == null) {
             AbstractApplicationContext ctx = new ClassPathXmlApplicationContext(CTX_FILE);
 
-            cfg = (Cfg)ctx.getBean("cfg-id");
+            cfg = (Cfg) ctx.getBean("cfg-id");
         }
 
         return cfg;

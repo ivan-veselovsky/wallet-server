@@ -1,23 +1,27 @@
 package edu.wallet.server.model;
 
-import edu.wallet.server.*;
-import java.util.*;
-import java.util.concurrent.*;
+import edu.wallet.server.EvictableValue;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Class ConcurrentLinkedHashMap from jsr166 and Google libs (same class?) represents both linked and bounded
  * (limited in size) concurrent map.
  * Unfortunately, we cannot use 3rd party solutions, so let's try to bicycle there.
- *
+ * <p>
  * This class implements {@link  ConcurrentMap}, but to simplify the implementation it only
  * supports #putIfAbsent(K, V) semantic, and no removal operations.
  * The map is cleared implicitly. It removes least recently added keys to preserve the limit constraint.
  * To simplify the implementation we introduce notions of hard and soft limits, see the constructor
  * comment for more detail.
  */
-public class LimitedConcurrentMap<K,V extends EvictableValue> implements ConcurrentMap<K,V> {
+public class LimitedConcurrentMap<K, V extends EvictableValue> implements ConcurrentMap<K, V> {
 
-    private final ConcurrentMap<K,V> map;
+    private final ConcurrentMap<K, V> map;
 
     private final int softLimit;
 
@@ -28,18 +32,19 @@ public class LimitedConcurrentMap<K,V extends EvictableValue> implements Concurr
 
     /**
      * Constructor.
-     * @param m The underlying concurent map.
-     * @param hardLimit The Hard limit that really should not be ever exceeded.
+     *
+     * @param m          The underlying concurent map.
+     * @param hardLimit  The Hard limit that really should not be ever exceeded.
      * @param numThreads Expected number of threads that will work with this map.
      */
-    public LimitedConcurrentMap(ConcurrentMap<K,V> m, int hardLimit, int numThreads) {
+    public LimitedConcurrentMap(ConcurrentMap<K, V> m, int hardLimit, int numThreads) {
         this.map = m;
 
         this.softLimit = hardLimit - numThreads;
 
         if (softLimit < 0) {
             throw new IllegalArgumentException("hardLimit too small: " + hardLimit
-                + ". It should be at least 1 more than th enumber of threads, which is " + numThreads);
+                    + ". It should be at least 1 more than th enumber of threads, which is " + numThreads);
         }
     }
 
@@ -89,51 +94,63 @@ public class LimitedConcurrentMap<K,V extends EvictableValue> implements Concurr
 
     // --------------------------------------
 
-    @Override public boolean remove(Object key, Object value) {
+    @Override
+    public boolean remove(Object key, Object value) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public boolean replace(K key, V oldValue, V newValue) {
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public V replace(K key, V value) {
+    @Override
+    public V replace(K key, V value) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public boolean containsKey(Object key) {
+    @Override
+    public boolean containsKey(Object key) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public boolean containsValue(Object value) {
+    @Override
+    public boolean containsValue(Object value) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public V put(K key, V value) {
+    @Override
+    public V put(K key, V value) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public V remove(Object key) {
+    @Override
+    public V remove(Object key) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public void putAll(Map<? extends K, ? extends V> m) {
+    @Override
+    public void putAll(Map<? extends K, ? extends V> m) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public void clear() {
+    @Override
+    public void clear() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public Set<K> keySet() {
+    @Override
+    public Set<K> keySet() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public Collection<V> values() {
+    @Override
+    public Collection<V> values() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public Set<Entry<K, V>> entrySet() {
+    @Override
+    public Set<Entry<K, V>> entrySet() {
         throw new UnsupportedOperationException();
     }
 }

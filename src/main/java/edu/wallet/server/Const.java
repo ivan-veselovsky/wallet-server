@@ -1,6 +1,6 @@
 package edu.wallet.server;
 
-import java.nio.charset.*;
+import java.nio.charset.Charset;
 
 /**
  * Some project-wide utility constants.
@@ -19,7 +19,7 @@ public class Const {
     /**
      * Ordinals of this enum are sent to client as the error codes.
      */
-    public static enum ErrorCode {
+    public enum ErrorCode {
         Okay,                       // 0
         UserBlacklisted,            // 1
         BalanceChangeLimitExceeded, // 2
@@ -29,4 +29,10 @@ public class Const {
         InternalServerError,        // 6
     }
 
+    public static int safeAbs(int x) {
+        if (x == Integer.MIN_VALUE) {
+            return Integer.MAX_VALUE; // closest approximation (?).
+        }
+        return Math.abs(x);
+    }
 }

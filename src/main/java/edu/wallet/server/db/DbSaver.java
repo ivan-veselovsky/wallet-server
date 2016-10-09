@@ -1,13 +1,20 @@
 package edu.wallet.server.db;
 
-import edu.wallet.config.*;
-import edu.wallet.log.*;
-import edu.wallet.server.*;
-import edu.wallet.server.model.*;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import edu.wallet.config.IConfiguration;
+import edu.wallet.log.ILogger;
+import edu.wallet.server.ValueObject;
+import edu.wallet.server.model.LazyConcurrentMap;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * TODO: better tests for saver.
@@ -61,7 +68,8 @@ public class DbSaver implements Closeable {
         final long periodSec = configuration.getDbWritePeriodSec();
 
         srvc.scheduleAtFixedRate(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 runImpl();
             }
         }, 0, periodSec, TimeUnit.SECONDS);

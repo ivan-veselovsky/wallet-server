@@ -1,15 +1,22 @@
 package edu.wallet.server.net;
 
-import edu.wallet.log.*;
-import java.io.*;
-import java.nio.channels.*;
-import java.util.*;
+import edu.wallet.log.ILogger;
+
+import java.io.IOException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  *
  */
 public class ServerChannelRunnable implements Runnable {
-    /** Selector for this thread. */
+    /**
+     * Selector for this thread.
+     */
     private final Selector selector;
     private final ILogger logger;
     private final NetServer srv;
@@ -25,13 +32,13 @@ public class ServerChannelRunnable implements Runnable {
         this.srv = srv;
     }
 
-    @Override public void run() {
+    @Override
+    public void run() {
         try {
             while (!closed && !Thread.currentThread().isInterrupted()) {
                 try {
                     accept();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     logger.error("While accepting on server socket: ", e);
 
                     break;
@@ -39,8 +46,7 @@ public class ServerChannelRunnable implements Runnable {
             }
         } catch (Throwable t) {
             logger.error("In accept thread: ", t);
-        }
-        finally {
+        } finally {
             closeSelector(); // Safety.
         }
     }
@@ -53,8 +59,7 @@ public class ServerChannelRunnable implements Runnable {
                     // Walk through the ready keys collection and process date requests.
                     processSelectedKeys(selector.selectedKeys());
             }
-        }
-        finally {
+        } finally {
             closeSelector();
         }
     }
@@ -74,7 +79,7 @@ public class ServerChannelRunnable implements Runnable {
     }
 
     private void processSelectedKeys(Set<SelectionKey> keys) throws IOException {
-        for (Iterator<SelectionKey> iter = keys.iterator(); iter.hasNext();) {
+        for (Iterator<SelectionKey> iter = keys.iterator(); iter.hasNext(); ) {
             SelectionKey key = iter.next();
 
             iter.remove();
@@ -86,7 +91,7 @@ public class ServerChannelRunnable implements Runnable {
             if (key.isAcceptable()) {
                 // The key indexes into the selector so we
                 // can retrieve the socket that's ready for I/O
-                ServerSocketChannel srvrCh = (ServerSocketChannel)key.channel();
+                ServerSocketChannel srvrCh = (ServerSocketChannel) key.channel();
 
                 SocketChannel sockCh = srvrCh.accept();
 

@@ -1,6 +1,6 @@
 package edu.wallet.server;
 
-import org.json.*;
+import org.json.JSONObject;
 
 /**
  * transaction id, error code, balance version, balance change, balance after change
@@ -27,12 +27,12 @@ public class Response {
 
     private String serialize0() {
         return new JSONObject()
-            .accumulate(Field.transactionId.name(), transactionId)
-            .accumulate(Field.errorCode.name(), errorCode)
-            .accumulate(Field.balanceVersion.name(), balanceVersion)
-            .accumulate(Field.balanceChange.name(), balanceChange)
-            .accumulate(Field.outgoingBalance.name(), outgoingBalance)
-            .toString();
+                .accumulate(Field.transactionId.name(), transactionId)
+                .accumulate(Field.errorCode.name(), errorCode)
+                .accumulate(Field.balanceVersion.name(), balanceVersion)
+                .accumulate(Field.balanceChange.name(), balanceChange)
+                .accumulate(Field.outgoingBalance.name(), outgoingBalance)
+                .toString();
     }
 
     public byte[] serialize() {
@@ -49,7 +49,8 @@ public class Response {
         outgoingBalance = obj.getInt(Field.outgoingBalance.name());
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         // used in logging
         return serialize0();
     }

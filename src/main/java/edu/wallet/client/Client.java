@@ -1,9 +1,11 @@
 package edu.wallet.client;
 
-import edu.wallet.config.*;
-import edu.wallet.server.*;
+import edu.wallet.config.Cfg;
+import edu.wallet.config.IConfiguration;
+import edu.wallet.server.Const;
+
 import java.io.*;
-import java.net.*;
+import java.net.Socket;
 
 /**
  * The Client of Wallet server.

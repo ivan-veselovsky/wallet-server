@@ -7,6 +7,8 @@ package edu.wallet.log;
  */
 public interface ILogger {
     void debug(String message, Throwable t);
+
     void info(String message, Throwable t);
+
     void error(String message, Throwable t);
 }

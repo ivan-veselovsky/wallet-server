@@ -1,6 +1,7 @@
 package edu.wallet.config;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -24,7 +25,7 @@ public class PropertyFileConfiguration implements IConfiguration {
             try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
                 if (is == null) {
                     throw new IllegalStateException("please make sure file [" + fileName
-                        + "] is present in the application class path.");
+                            + "] is present in the application class path.");
                 }
 
                 p.load(is);
@@ -67,27 +68,33 @@ public class PropertyFileConfiguration implements IConfiguration {
         }
     }
 
-    @Override public Set<String> getBlackList() {
+    @Override
+    public Set<String> getBlackList() {
         return c.getBlackList();
     }
 
-    @Override public int getMaxHistory() {
+    @Override
+    public int getMaxHistory() {
         return c.getMaxHistory();
     }
 
-    @Override public int getNumThreads() {
+    @Override
+    public int getNumThreads() {
         return c.getNumThreads();
     }
 
-    @Override public int getMaxBalanceChange() {
+    @Override
+    public int getMaxBalanceChange() {
         return c.getMaxBalanceChange();
     }
 
-    @Override public int getDbWritePeriodSec() {
+    @Override
+    public int getDbWritePeriodSec() {
         return c.getDbWritePeriodSec();
     }
 
-    @Override public int getServerPort() {
+    @Override
+    public int getServerPort() {
         return c.getServerPort();
     }
 }

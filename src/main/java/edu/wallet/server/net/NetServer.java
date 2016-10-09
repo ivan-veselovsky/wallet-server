@@ -1,15 +1,24 @@
 package edu.wallet.server.net;
 
-import edu.wallet.config.*;
-import edu.wallet.log.*;
-import edu.wallet.server.*;
-import java.io.*;
-import java.net.*;
-import java.nio.channels.*;
-import java.nio.channels.spi.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import edu.wallet.config.Cfg;
+import edu.wallet.config.IConfiguration;
+import edu.wallet.log.ILogger;
+import edu.wallet.server.IProcessor;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.SelectorProvider;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -56,7 +65,7 @@ public class NetServer implements Closeable {
 
         channelRunnables = new ChannelRunnable[numServerThreads];
 
-        for (int i=0; i<numServerThreads; i++) {
+        for (int i = 0; i < numServerThreads; i++) {
             Selector selector = SelectorProvider.provider().openSelector();
 
             ChannelRunnable channelRunnable = new ChannelRunnable(processor, i, logger, selector);
@@ -70,7 +79,7 @@ public class NetServer implements Closeable {
     }
 
     private Selector createAcceptSelector(SocketAddress addr) throws Exception {
-         // Create a new selector
+        // Create a new selector
         Selector selector = SelectorProvider.provider().openSelector();
 
         if (addr != null) {
@@ -112,7 +121,7 @@ public class NetServer implements Closeable {
     public void close() throws IOException {
         serverRunnable.stop();
 
-        for (int i=0; i<channelRunnables.length; i++) {
+        for (int i = 0; i < channelRunnables.length; i++) {
             channelRunnables[i].stop();
         }
 
