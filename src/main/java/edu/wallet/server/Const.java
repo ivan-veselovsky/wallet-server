@@ -23,7 +23,8 @@ public class Const {
         Okay,                       // 0
         UserBlacklisted,            // 1
         BalanceChangeLimitExceeded, // 2
-        DuplicateTransactionId,     // 3
+        DuplicateTransactionId,     // 3 TODO: it was an idea to send this error code, when a history response is sent.
+                                        // But it was not yet implemented.
         NegativeBalance,            // 4
         badRequest,                 // 5
         InternalServerError,        // 6
