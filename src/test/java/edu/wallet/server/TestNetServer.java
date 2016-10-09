@@ -32,7 +32,9 @@ public class TestNetServer extends Base {
 
             String actualResponse = client.send("{\"transactionId\":12345,\"balanceChange\":-499,\"user\":\"ivan\"}\n");
 
-            assertEquals("{\"transactionId\":12345,\"outgoingBalance\":1,\"balanceChange\":-499,\"errorCode\":0," + "\"balanceVersion\":29}", actualResponse);
+            assertJsonObjectsEqual(
+                    "{\"transactionId\":12345,\"outgoingBalance\":1,\"balanceChange\":-499,\"errorCode\":0,"
+                    + "\"balanceVersion\":29}", actualResponse);
         }
     }
 
@@ -131,8 +133,7 @@ public class TestNetServer extends Base {
 
                                         String expected = "{\"transactionId\":" + tx + ",\"outgoingBalance\":" + bal + ",\"balanceChange\":" + balChange + ",\"errorCode\":0," + "\"balanceVersion\":" + balVersion + "}";
 
-
-                                        assertEquals(expected, actualResponse);
+                                        assertJsonObjectsEqual(expected, actualResponse);
 
                                         if (testingDuplicates && dupDelta == -1 && (j % 11) == 0) {
                                             // remember a request to duplicate it later:
