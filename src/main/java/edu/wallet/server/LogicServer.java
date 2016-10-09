@@ -116,7 +116,7 @@ public class LogicServer implements IProcessor {
      * @param rq
      * @return
      */
-    public Response process(Request rq) {
+    Response process(Request rq) {
         Response rsp = null;
         Exception e = null;
 
