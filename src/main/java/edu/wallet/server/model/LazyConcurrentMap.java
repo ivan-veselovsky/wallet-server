@@ -29,11 +29,6 @@ public class LazyConcurrentMap<K, V> {
     private final ValueFactory<K, V> factory;
 
     /**
-     * Flag indicating that this map is closed and cleared.
-     */
-    private boolean closed;
-
-    /**
      * Constructor.
      *
      * @param factory the factory to create new values lazily.
@@ -55,10 +50,6 @@ public class LazyConcurrentMap<K, V> {
         ValueWrapper w = map.get(k);
 
         if (w == null) {
-            if (closed)
-                throw new IllegalStateException("Failed to create value for key [" + k
-                        + "]: the map is already closed.");
-
             final ValueWrapper wNew = new ValueWrapper(k);
 
             w = map.putIfAbsent(k, wNew);
